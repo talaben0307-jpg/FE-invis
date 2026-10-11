@@ -1,0 +1,31 @@
+local isFEInvis = false
+local clone = nil
+
+Tabs.Misc:AddButton({
+    Title = "👻 Bật / Tắt Tàng Hình Thật (FE Invisible)",
+    Callback = function()
+        isFEInvis = not isFEInvis
+        local player = game.Players.LocalPlayer
+        local char = player.Character
+        
+        if isFEInvis and char and char:FindFirstChild("HumanoidRootPart") then
+            -- Tạo Clone vô hình đẩy hình ảnh ra xa
+            local hrp = char.HumanoidRootPart
+            local oldCFrame = hrp.CFrame
+            
+            -- Tách nhân vật trên server
+            task.spawn(function()
+                char:MoveTo(Vector3.new(0, 999999, 0))
+                task.wait(0.1)
+                hrp.CFrame = oldCFrame
+            end)
+            
+            print("Đã bật Tàng Hình FE! Người khác không thấy cậu.")
+        else
+            if char and char:FindFirstChild("Humanoid") then
+                char.Humanoid:ChangeState(Enum.HumanoidStateType.Dead)
+            end
+            print("Đã tắt Tàng Hình!")
+        end
+    end
+})
