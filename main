@@ -1,31 +1,83 @@
-local isFEInvis = false
-local clone = nil
+-- Tải thư viện Fluent UI
+local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
+local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
+local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
 
-Tabs.Misc:AddButton({
-    Title = "👻 Bật / Tắt Tàng Hình Thật (FE Invisible)",
-    Callback = function()
-        isFEInvis = not isFEInvis
+-- Khởi tạo Window Fluent UI cho FE Invisible
+local Window = Fluent:CreateWindow({
+    Title = "FE Invisible Hub",
+    SubTitle = "by Phong | Fluent UI",
+    TabWidth = 160,
+    Size = UDim2.fromOffset(450, 320),
+    Acrylic = true,
+    Theme = "Darker",
+    MinimizeKey = Enum.KeyCode.F -- Nhấn phím F để bật/tắt menu
+})
+
+local Tabs = {
+    Main = Window:AddTab({ Title = "Invisibility", Icon = "eye-off" }),
+    Settings = Window:AddTab({ Title = "Settings", Icon = "settings" })
+}
+
+-- Biến lưu trạng thái FE Invisible
+local isFEInvis = false
+local characterClone = nil
+
+Tabs.Main:AddSection("FE Invisible Control")
+
+Tabs.Main:AddToggle("FEInvisToggle", {
+    Title = "👻 Bật / Tắt Tàng Hình FE (Người khác không thấy)",
+    Default = false,
+    Callback = function(Value)
+        isFEInvis = Value
         local player = game.Players.LocalPlayer
         local char = player.Character
         
-        if isFEInvis and char and char:FindFirstChild("HumanoidRootPart") then
-            -- Tạo Clone vô hình đẩy hình ảnh ra xa
-            local hrp = char.HumanoidRootPart
-            local oldCFrame = hrp.CFrame
-            
-            -- Tách nhân vật trên server
-            task.spawn(function()
-                char:MoveTo(Vector3.new(0, 999999, 0))
-                task.wait(0.1)
-                hrp.CFrame = oldCFrame
-            end)
-            
-            print("Đã bật Tàng Hình FE! Người khác không thấy cậu.")
+        if isFEInvis then
+            if char and char:FindFirstChild("HumanoidRootPart") then
+                local hrp = char.HumanoidRootPart
+                local oldCFrame = hrp.CFrame
+                
+                -- Thực hiện cơ chế đẩy Character Visual ra xa trên Server
+                task.spawn(function()
+                    char:MoveTo(Vector3.new(0, 999999, 0))
+                    task.wait(0.1)
+                    hrp.CFrame = oldCFrame
+                end)
+                
+                Fluent:Notify({
+                    Title = "FE Invisible",
+                    Content = "Đã bật tàng hình FE! Người chơi khác không thể nhìn thấy cậu.",
+                    Duration = 4
+                })
+            end
         else
             if char and char:FindFirstChild("Humanoid") then
                 char.Humanoid:ChangeState(Enum.HumanoidStateType.Dead)
             end
-            print("Đã tắt Tàng Hình!")
+            
+            Fluent:Notify({
+                Title = "FE Invisible",
+                Content = "Đã tắt tàng hình (Reset nhân vật).",
+                Duration = 4
+            })
         end
     end
+})
+
+Tabs.Main:AddParagraph({
+    Title = "📌 Hướng dẫn & Lưu ý",
+    Content = "• Hitbox và vị trí đòn đánh/nhặt trứng của cậu vẫn giữ nguyên ở chỗ cũ.\n• Bấm phím F để thu nhỏ hoặc mở lại bảng Fluent UI này."
+})
+
+-- Tùy chọn cài đặt giao diện
+InterfaceManager:BuildInterfaceSection(Tabs.Settings)
+SaveManager:BuildConfigSection(Tabs.Settings)
+
+Window:SelectTab(1)
+
+Fluent:Notify({
+    Title = "FE Invisible Loaded",
+    Content = "Script tàng hình FE đã sẵn sàng! Bấm F để ẩn/hiện.",
+    Duration = 4
 })
